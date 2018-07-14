@@ -99,6 +99,8 @@ class Mod:
     @commands.guild_only()
     async def listwarns(self, ctx, member:discord.Member):
         """Lists warnings for a user"""
+        if member == None:
+            member = ctx.message.author
         embed = discord.Embed(color=discord.Color.dark_red())
         embed.set_author(name="Warns for {}#{}".format(member.display_name, member.discriminator), icon_url=member.avatar_url)
         with open("data/warnings.json", "r") as f:
