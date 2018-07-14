@@ -35,9 +35,12 @@ if __name__ == "__main__":
     try:
         import uvloop
     except ImportError:
+        logger.info("Import Error: uvloop")
         pass
     else:
+        logger.info("asyncio loop policy")
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        logger.info("asyncio loop policy done")
     try:
         with open("config.json") as c:
             config = json.load(c)
@@ -48,6 +51,7 @@ if __name__ == "__main__":
                        description='kneedeepatron',
                        max_messages=100)
     bot.config = config
+    logger.info("Config Loaded")
     bot.is_setup = asyncio.Event(loop=bot.loop)
 
     async def wait_for_setup():
@@ -90,7 +94,8 @@ if __name__ == "__main__":
 
     @bot.event
     async def on_ready():
-        bot.main_server = discord.utils.get(bot.guilds, id=393206903058071563)
+        logger.info("Bot Ready")
+        bot.main_server = discord.utils.get(bot.guilds, id=141254489465159680)
         for channel, cid in config['channels'].items():
             setattr(bot, "{}_channel".format(channel), bot.main_server.get_channel(cid))
         for role, roleid in config['roles'].items():
@@ -107,6 +112,8 @@ if __name__ == "__main__":
                 logger.exception('Failed to load extension {}'.format(extension))
 
     try:
+        logger.info("Attempting to run")
         bot.run(config['token'])
+        logger.info("Running KneeDeepAtron")
     finally:
         sys.exit(-1)
