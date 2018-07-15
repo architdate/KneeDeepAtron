@@ -56,5 +56,12 @@ class General:
         embed.description = "A guide for updating to new B9S versions."
         await ctx.send(embed=embed)
 
+    @commands.command()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
+    async def speak(self, ctx, channel:discord.TextChannel, *, message:str):
+        """Sentience"""
+        await channel.send(message)
+        await ctx.message.add_reaction("✅")
+
 def setup(bot):
     bot.add_cog(General(bot))
