@@ -216,13 +216,22 @@ class Mod:
         try:
             overwrites_subs = ctx.message.channel.overwrites_for(self.bot.subs_role)
             overwrites_frens = ctx.message.channel.overwrites_for(self.bot.frens_role)
+            overwrites_mods = ctx.message.channel.overwrites_for(self.bot.mods_role)
+            overwrites_immortals = ctx.message.channel.overwrites_for(self.bot.immortals_role)
+            overwrites_trusted = ctx.message.channel.overwrites_for(self.bot.trusted_role)
             if overwrites_subs.send_messages is False or overwrites_frens.send_messages is False:
                 await ctx.send("🔒 Channel is already locked down. Use `unlock` command to unlock.")
                 return
             overwrites_subs.send_messages = False
             overwrites_frens.send_messages = False
+            overwrites_mods.send_messages = True
+            overwrites_immortals.send_messages = True
+            overwrites_trusted.send_messages = True
             await ctx.message.channel.set_permissions(self.bot.subs_role, overwrite=overwrites_subs)
             await ctx.message.channel.set_permissions(self.bot.frens_role, overwrite=overwrites_frens)
+            await ctx.message.channel.set_permissions(self.bot.mods_role, overwrite=overwrites_mods)
+            await ctx.message.channel.set_permissions(self.bot.immortals_role, overwrite=overwrites_immortals)
+            await ctx.message.channel.set_permissions(self.bot.trusted_role, overwrite=overwrites_trusted)
             await ctx.send("🔒 Channel locked down. Only staff members may speak. Do not bring the topic to other channels or risk disciplinary actions.")
             msg = "🔒 **Lockdown**: {0} by {1} | {2}#{3}".format(ctx.message.channel.mention, ctx.message.author.mention, ctx.message.author.name, ctx.message.author.discriminator)
             await self.bot.botlogs_channel.send(msg)
@@ -239,13 +248,16 @@ class Mod:
         try:
             overwrites_subs = ctx.message.channel.overwrites_for(self.bot.subs_role)
             overwrites_frens = ctx.message.channel.overwrites_for(self.bot.frens_role)
+            overwrites_trusted = ctx.message.channel.overwrites_for(self.bot.trusted_role)
             if overwrites_subs.send_messages is True and overwrites_frens.send_messages is True:
                 await ctx.send("🔓 Channel is already unlocked.")
                 return
             overwrites_subs.send_messages = None
             overwrites_frens.send_messages = None
+            overwrites_trusted.send_messages = None
             await ctx.message.channel.set_permissions(self.bot.subs_role, overwrite=overwrites_subs)
             await ctx.message.channel.set_permissions(self.bot.frens_role, overwrite=overwrites_frens)
+            await ctx.message.channel.set_permissions(self.bot.trusted_role, overwrite=overwrites_trusted)
             await ctx.send("🔓 Channel unlocked.")
             msg = "🔓 **Unlock**: {0} by {1} | {2}#{3}".format(ctx.message.channel.mention, ctx.message.author.mention, ctx.message.author.name, ctx.message.author.discriminator)
             await self.bot.botlogs_channel.send(msg)
@@ -316,6 +328,80 @@ class Mod:
         await ctx.send(return_msg)
         await self.bot.botlogs_channel.send(embed=embed)
 
+    @commands.command()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals", "Trusted")
+    async def mute(self, ctx, user:discord.Member, *, reason="Reason Unspecified"):
+        """Mute a specific user, staff and trusted users only"""
+        for role in [self.bot.mods_role, self.bot.immortals_role, self.bot.duncan_role, self.bot.beryl_role]:
+            if role in user.roles:
+                await ctx.send("You cannot mute a staffer!")
+                return
+        await user.add_roles(self.bot.muted_role)
+        msg = "**Muted**: {} has muted {}! The command was used for the following reason: {}".format(ctx.message.author.mention, user.mention, reason)
+        await ctx.send(msg)
+        await self.bot.botlogsmod_channel.send(msg)
+
+    @commands.command()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals", "Trusted")
+    async def unmute(self, ctx, user:discord.Member, *, reason="Reason Unspecified"):
+        """Mute a specific user, staff and trusted users only"""
+        await user.remove_roles(self.bot.muted_role)
+        msg = "**Unmuted**: {} has unmuted {}! The command was used for the following reason: {}".format(ctx.message.author.mention, user.mention, reason)
+        await ctx.send(msg)
+        await self.bot.botlogsmod_channel.send(msg)
+
+    @commands.command()
+    @checks.check_permissions_or_owner(kick_members=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def approve(self, ctx, user: discord.Member):
+        """Approve a user, giving them the trusted role."""
+        await user.add_roles(self.bot.trusted_role)
+        msg = "✅ **Approved**: {} approved {}".format(ctx.message.author.mention, user.mention)
+        await ctx.send(msg)
+        await self.bot.botlogsmod_channel.send(msg)
+
+    @commands.command()
+    @checks.check_permissions_or_owner(kick_members=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def revoke(self, ctx, user:discord.Member):
+        """Removes trusted role"""
+        await user.remove_roles(self.bot.trusted_role)
+        msg = "✅ **Revoked**: {} removed trusted from {}".format(ctx.message.author.mention, user.mention)
+        await ctx.send(msg)
+        await self.bot.botlogsmod_channel.send(msg)
+
+    @commands.command(aliases=['sr'])
+    @commands.has_any_role("Mods", "Trusted")
+    async def staffrequest(self, ctx, *, reason="Reason Unspecified"):
+        """Summons staff, trusted only"""
+        await self.bot.botlogsmod_channel.send("@everyone {} has requested staff assistance for the reason: {}".format(ctx.message.author, reason))
+        await ctx.send("Staff request sent! This channel will locked down till staff takes action")
+        try:
+            overwrites_subs = ctx.message.channel.overwrites_for(self.bot.subs_role)
+            overwrites_frens = ctx.message.channel.overwrites_for(self.bot.frens_role)
+            overwrites_mods = ctx.message.channel.overwrites_for(self.bot.mods_role)
+            overwrites_immortals = ctx.message.channel.overwrites_for(self.bot.immortals_role)
+            overwrites_trusted = ctx.message.channel.overwrites_for(self.bot.trusted_role)
+            if overwrites_subs.send_messages is False or overwrites_frens.send_messages is False:
+                await ctx.send("🔒 Channel is already locked down. Use `unlock` command to unlock.")
+                return
+            overwrites_subs.send_messages = False
+            overwrites_frens.send_messages = False
+            overwrites_mods.send_messages = True
+            overwrites_immortals.send_messages = True
+            overwrites_trusted.send_messages = True
+            await ctx.message.channel.set_permissions(self.bot.subs_role, overwrite=overwrites_subs)
+            await ctx.message.channel.set_permissions(self.bot.frens_role, overwrite=overwrites_frens)
+            await ctx.message.channel.set_permissions(self.bot.mods_role, overwrite=overwrites_mods)
+            await ctx.message.channel.set_permissions(self.bot.immortals_role, overwrite=overwrites_immortals)
+            await ctx.message.channel.set_permissions(self.bot.trusted_role, overwrite=overwrites_trusted)
+            await ctx.send("🔒 Channel locked down. Only staff members may speak. Do not bring the topic to other channels or risk disciplinary actions.")
+            msg = "🔒 **Lockdown**: {0} by {1} | {2}#{3}".format(ctx.message.channel.mention, ctx.message.author.mention, ctx.message.author.name, ctx.message.author.discriminator)
+            await self.bot.botlogs_channel.send(msg)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            await ctx.send("💢 I don't have permission to do this.")
 
 def setup(bot):
     bot.add_cog(Mod(bot))
