@@ -329,7 +329,7 @@ class Mod:
         await self.bot.botlogs_channel.send(embed=embed)
 
     @commands.command()
-    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals", "Trusted")
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def mute(self, ctx, user:discord.Member, *, reason="Reason Unspecified"):
         """Mute a specific user, staff and trusted users only"""
         for role in [self.bot.mods_role, self.bot.immortals_role, self.bot.duncan_role, self.bot.beryl_role]:
@@ -342,7 +342,7 @@ class Mod:
         await self.bot.botlogsmod_channel.send(msg)
 
     @commands.command()
-    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals", "Trusted")
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def unmute(self, ctx, user:discord.Member, *, reason="Reason Unspecified"):
         """Mute a specific user, staff and trusted users only"""
         await user.remove_roles(self.bot.muted_role)
