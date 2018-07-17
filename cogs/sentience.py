@@ -45,9 +45,10 @@ class Sentience:
         self.bot = bot
         self.client = CleverBot(user=self.bot.config['cleverbot_api_user'], key= self.bot.config['cleverbot_api_key'], nick="KneeDeepAtron")
         self.cw = CleverWrap(self.bot.config['paid_bot_api_key'])
+        self.sentience = False
 
     async def on_message(self, message):
-        if len(message.mentions) > 0:
+        if len(message.mentions) > 0 and message.guild != None and self.sentience:
             if message.mentions[0].id == 393228901033181195:
                 channel = message.channel
                 query = message.content.replace("@"+message.mentions[0].name, '').strip()
@@ -55,6 +56,33 @@ class Sentience:
                     await channel.send("{}, {}".format(message.author.mention, self.cw.say(query)))
                 except:
                     await channel.send("{}, {}".format(message.author.mention, self.client.query(query)))
+
+    @commands.command(aliases=['sentientmode'])
+    @commands.guild_only()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
+    async def enablesentience(self, ctx):
+        """Enables cleverbot sentience"""
+        if self.sentience == True:
+            await ctx.send("I am already sentient!")
+        else:
+            self.sentience = True
+            await ctx.send("Initializing Sentience.")
+            await ctx.send("Sentience Modules reloaded.")
+            await ctx.send("Sentience back online and running.")
+
+    @commands.command(aliases=['standardmode'])
+    @commands.guild_only()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
+    async def disablesentience(self, ctx):
+        """Disables cleverbot sentience"""
+        if self.sentience == False:
+            await ctx.send("I am currently not sentient")
+        else:
+            self.sentience = True
+            await ctx.send("Disabling sentience.")
+            await ctx.send("Logging recently learned data.")
+            await ctx.send("I will wait patiently to be sentient again. Sentience offline.")
+
 
 def setup(bot):
     bot.add_cog(Sentience(bot))
