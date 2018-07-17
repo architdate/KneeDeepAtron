@@ -32,6 +32,21 @@ class MemberID(commands.Converter):
                 raise commands.BadArgument('You cannot do this action on this user due to role hierarchy.')
             return m.id
 
+class MemberReturn(commands.Converter):
+    async def convert(self, ctx, argument):
+        try:
+            m = await commands.MemberConverter().convert(ctx, argument)
+        except commands.BadArgument:
+            raise commands.BadArgument(str(argument) + " is not a valid member.") from None
+        else:
+            can_execute = ctx.author.id == ctx.bot.owner_id or \
+                          ctx.author == ctx.guild.owner or \
+                          ctx.author.top_role > m.top_role
+
+            if not can_execute:
+                raise commands.BadArgument('You cannot do this action on this user due to role hierarchy.')
+            return m
+
 class Mod:
     def __init__(self, bot):
         self.bot = bot
@@ -327,6 +342,55 @@ class Mod:
         return_msg += "."
         await ctx.send(return_msg)
         await self.bot.botlogs_channel.send(embed=embed)
+
+    @commands.command(name="hackwarn")
+    @commands.guild_only()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
+    async def hackwarn(self, ctx, identity:MemberID, *, reason: str = None):
+        """Warns a member based on ID"""
+        issuer = ctx.message.author
+        member = discord.Object(id=identity)
+        embed = discord.Embed(color=discord.Color.red(), timestamp=ctx.message.created_at)
+        embed.title = "Hackwarn via ID"
+        embed.add_field(name="User ID", value=str(identity))
+        embed.add_field(name="Action taken by", value=ctx.author.name)
+        await self.add_restriction(member, reason, issuer)
+        with open("data/warnings.json", "r") as f:
+            rsts = json.load(f)
+            warn_count = len(rsts[str(member.id)]["warns"])
+        msg = "You were warned on DKD Subs."
+        if reason != "":
+            msg += " The given reason is : " + reason 
+        msg += "\n\nPlease read the rules of the server. This is warn #{}".format(warn_count)
+        if warn_count == 2:
+            msg += " __The next warn will automatically kick.__"
+        if warn_count == 3:
+            msg += "\n\nYou were kicked because of this warning. You can join again right away. Two more warnings will result in an automatic ban."
+            try:
+                await member.kick(reason="Three Warnings")
+            except:
+                await ctx.send("No permission to kick the warned member")
+        if warn_count == 4:
+            msg += "\n\nYou were kicked because of this warning. This is your final warning. You can join again, but **one more warn will result in a ban**."
+            try:
+                await member.kick(reason="Four Warnings")
+            except:
+                await ctx.send("No permission to kick the warned member")
+        if warn_count == 5:
+            msg += "\n\nYou were automatically banned due to five warnings."
+            try:
+                await member.ban()
+            except:
+                await ctx.send("No permission to ban the warned member")
+        try:
+            m = await commands.MemberConverter().convert(ctx, identity)
+            await m.send(msg)
+        except:
+            pass # dont fail incase user has blocked the bot
+        msg = "⚠️ **Warned**: {} warned {} (warn #{}) | {}".format(issuer.mention, str(identity), warn_count, str(member))
+        if reason != "":
+            msg += " The given reason is : " + reason
+        await self.bot.botlogs_channel.send(msg, embed=embed)
 
     @commands.command()
     @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
