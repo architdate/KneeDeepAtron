@@ -47,15 +47,22 @@ class Sentience:
         self.cw = CleverWrap(self.bot.config['paid_bot_api_key'])
         self.sentience = False
 
+    def has_trusted_or_above(self, member):
+        l = [x.name for x in member.roles]
+        if ("Trusted" in l) or ("Mods" in l) or ("The Dunctator" in l) or ("Evil Queen Beryl" in l) or ("The Almost Immortals" in l) or ("Frens" in l):
+            return True
+
     async def on_message(self, message):
         if len(message.mentions) > 0 and message.guild != None and self.sentience:
+            if not self.has_trusted_or_above(message.author):
+                return
             if message.mentions[0].id == 393228901033181195:
                 channel = message.channel
                 query = message.content.replace("@"+message.mentions[0].name, '').strip()
                 try:
                     await channel.send("{}, {}".format(message.author.mention, self.cw.say(query)))
                 except:
-                    await channel.send("{}, {}".format(message.author.mention, self.client.query(query)))
+                    await channel.send("{}, {}".format(message.author.mention, self.client.query(query)) + " (pant.. pant) slow down. My API is wearing out")
 
     @commands.command(aliases=['sentientmode'])
     @commands.guild_only()

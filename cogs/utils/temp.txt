@@ -1,2 +1,2 @@
-for i in server.roles:
-    print("Name: {} ID: {}".format(i.name, i.id))
+for r in ctx.message.author.roles:
+    print(r.name + str(r.id))
