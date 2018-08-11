@@ -20,7 +20,7 @@ class MessageLogger:
                 embed.add_field(name='Attachment', value='[{0}]({1})'.format(file.filename, file.url), inline=False)
         embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url_as(format='png'))
         embed.timestamp = message.created_at
-        await self.bot.botlogsmod_channel.send("Deleted Message by: {}".format(message.author.name),embed=embed)
+        await self.bot.botlogsmod_channel.send("Deleted Message by: {}. Message ID: {}, Channel ID: {}".format(message.author.name, str(message.id), message.channel.mention),embed=embed)
 
      
 def setup(bot):
