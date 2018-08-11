@@ -294,6 +294,7 @@ class Music:
             ctx.music_state.voice_client = await destination.connect()
 
     @commands.command()
+    @commands.has_any_role("Frens", "Trusted", "Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def play(self, ctx, *, request: str):
         """Plays a song or adds it to the playlist.
 
@@ -334,26 +335,27 @@ class Music:
         await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def pause(self, ctx):
         """Pauses the player."""
         if ctx.voice_client:
             ctx.voice_client.pause()
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def resume(self, ctx):
         """Resumes the player."""
         if ctx.voice_client:
             ctx.voice_client.resume()
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def stop(self, ctx):
         """Stops the player, clears the playlist and leaves the voice channel."""
         await ctx.music_state.stop()
 
     @commands.command()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def volume(self, ctx, volume: int = None):
         """Sets the volume of the player, scales from 0 to 100."""
         if volume < 0 or volume > 100:
@@ -361,6 +363,7 @@ class Music:
         ctx.music_state.volume = volume / 100
 
     @commands.command()
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def clear(self, ctx):
         """Clears the playlist."""
         ctx.music_state.playlist.clear()
@@ -387,7 +390,7 @@ class Music:
             ctx.voice_client.stop()
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_any_role("Mods", "The Dunctator", "Evil Queen Beryl", "The Almost Immortals")
     async def minskips(self, ctx, number: int):
         """Sets the minimum number of votes to skip a song.
 
